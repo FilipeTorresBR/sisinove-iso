@@ -1,0 +1,48 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import api from '../services/api';
+
+export default function LoginPage() {
+  const [form, setForm] = useState({ email: 'admin@sisinove.com.br', password: '123456' });
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    setError('');
+    try {
+      const { data } = await api.post('/auth/login', form);
+      localStorage.setItem('sisq_token', data.token);
+      localStorage.setItem('sisq_user', JSON.stringify(data.user));
+      navigate('/');
+    } catch (e) {
+      setError(e.response?.data?.message || 'Falha ao entrar.');
+    }
+  }
+
+  return (
+    <div className="login-screen">
+      <form className="login-card" onSubmit={handleSubmit}>
+        <div>
+          <h1>SISQ+</h1>
+          <p>Dashboard ISO 9001 da Sisinove</p>
+        </div>
+
+        <label>
+          E-mail
+          <input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+        </label>
+
+        <label>
+          Senha
+          <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+        </label>
+
+        {error && <div className="error-box">{error}</div>}
+
+        <button type="submit">Entrar</button>
+        <small>Usuário inicial: admin@sisinove.com.br | Senha: 123456</small>
+      </form>
+    </div>
+  );
+}
